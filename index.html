@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Thanksgiving Inflation Challenge!</title>
+<style>
+:root{--ink:#243044;--cream:#fffaf0;--orange:#c65b24;--green:#286653;--gold:#e7b44a;--red:#b84c44;--soft:#f4e7d4}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#fff8e9,#f2dfc8);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+header{text-align:center;padding:36px 18px 24px;background:linear-gradient(135deg,#9f421d,#d77831);color:white}
+header h1{font-size:clamp(2rem,5vw,3.5rem);margin:5px 0}header p{font-size:1.1rem;margin:6px auto;max-width:800px}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}.panel{background:white;border:2px solid #ead9c4;border-radius:20px;padding:20px;margin:18px 0;box-shadow:0 7px 18px #653b1710}
+h2{margin-top:0;color:#97451f}h3{margin:8px 0}button{cursor:pointer;border:0;border-radius:12px;padding:11px 16px;background:var(--green);color:white;font-weight:700;font-size:1rem}button:hover{filter:brightness(1.08)}button.secondary{background:#526178}button.orange{background:var(--orange)}button.red{background:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.item{border:1px solid #ead9c4;border-radius:15px;padding:14px;background:#fffdf9}.item .price{font-size:1.25rem;font-weight:800;color:var(--green)}.item label{display:flex;align-items:center;gap:10px;cursor:pointer}.item input{width:20px;height:20px;accent-color:var(--green)}
+.statrow{display:flex;flex-wrap:wrap;gap:12px}.stat{flex:1;min-width:140px;border-radius:14px;background:var(--soft);padding:15px;text-align:center}.stat b{font-size:1.5rem;display:block}.muted{color:#667085}.event{background:#fff8eb;border:2px dashed #db9b4a;border-radius:18px;padding:20px;margin:14px 0}.event h3{font-size:1.4rem}.card{background:linear-gradient(135deg,#fff7e5,#f7e3c9);padding:24px;border-radius:20px;border:2px solid #e2ba7b}.card h3{font-size:1.4rem}.badge{display:inline-block;background:#f2d69b;padding:5px 10px;border-radius:99px;font-weight:700}.hide{display:none}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.small{font-size:.92rem}.checks{display:flex;gap:10px;flex-wrap:wrap}.checks label{background:#f7f0e6;padding:9px 12px;border-radius:12px}footer{text-align:center;padding:20px;color:#596170}
+table{width:100%;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #eee;text-align:left}th{background:#f7ead9}.teamrow{display:flex;gap:8px;flex-wrap:wrap}.teamrow input{padding:10px;border:1px solid #ccc;border-radius:10px;flex:1;min-width:160px}
+@media(max-width:600px){.wrap{padding:12px}.panel{padding:15px}header{padding:26px 12px}}
+</style>
+</head>
+<body>
+<header>
+<div style="font-size:3rem">🦃🥧🍂</div>
+<h1>The Thanksgiving Inflation Challenge!</h1>
+<p>Can your team build the perfect Thanksgiving dinner before inflation eats up your budget?</p>
+</header>
+<div class="wrap">
+<section class="panel">
+<h2>🎯 Your Mission</h2>
+<p>You are hosting Thanksgiving dinner for <b>6 people</b>. Your team has <b>$100</b> to shop. Prices have changed—make smart choices, react to economic surprises, and try to win!</p>
+<div class="statrow"><div class="stat"><span>Starting Budget</span><b>$100</b></div><div class="stat"><span>Players per team</span><b>3–5</b></div><div class="stat"><span>Rounds</span><b>3</b></div></div>
+<div class="panel" style="background:#fffaf2"><h3>👥 Team Roles</h3><p>Chief Shopper · Economist · Budget Manager · Negotiator · Reporter</p></div>
+</section>
+<section class="panel">
+<h2>🛒 Round 1 — Build Your Dinner</h2>
+<p>Check the items your team wants to buy. Keep your 2026 total under $100. Compare it to what the same meal would have cost in 2021.</p>
+<div id="shopping" class="grid"></div>
+<div class="statrow" style="margin-top:18px">
+<div class="stat"><span>2026 Cart Total</span><b id="total">$0</b></div>
+<div class="stat"><span>Budget Left</span><b id="left">$100</b></div>
+<div class="stat"><span>2021 Cost for same items</span><b id="old">$0</b></div>
+<div class="stat"><span>Price difference</span><b id="diff">$0</b></div>
+</div>
+<p id="budgetMsg" style="font-weight:800"></p><button class="secondary" onclick="resetCart()">Reset Cart</button>
+</section>
+<section class="panel">
+<h2>⚡ Round 2 — Inflation Shock!</h2>
+<p><b>Mandatory challenge:</b> Each team must draw exactly <b>3 event cards</b> during the game. Draw one, apply its effect, discuss your response, then draw the next. Cards cannot be redrawn. Your final total includes all three event adjustments.</p>
+<div class="statrow"><div class="stat"><span>Event cards drawn</span><b id="drawCount">0 / 3</b></div><div class="stat"><span>Event adjustments</span><b id="eventTotal">$0</b></div><div class="stat"><span>Event-adjusted total</span><b id="adjustedTotal">$0</b></div></div><div class="actions"><button class="orange" id="drawBtn" onclick="drawEvent()">🎲 Draw Event Card (1 of 3)</button><button class="secondary" onclick="resetEvent()">Reset Event Cards</button></div><p id="drawStatus" style="font-weight:800"></p>
+<div id="eventDisplay" class="event hide"><div class="badge">EVENT CARD</div><h3 id="eventTitle"></h3><p id="eventDesc"></p><p id="eventAction" style="font-weight:700"></p></div>
+<div id="eventApplied" class="hide panel"><h3>Apply your event</h3><p id="eventInstruction"></p><div id="eventControl"></div><p id="eventResult" style="font-weight:800"></p></div>
+</section>
+<section class="panel">
+<h2>🏆 Round 3 — Dinner Battle Scoreboard</h2>
+<p>Teams earn points for budget management, building a feast, and explaining the economics. Teacher or teams enter final scores below.</p>
+<div class="grid">
+<div class="item"><b>💰 Budget Master</b><p>5 pts: Final cost is within $100 budget.</p></div>
+<div class="item"><b>🍽️ Thanksgiving Feast</b><p>5 pts: Turkey plus at least 3 sides/desserts.</p></div>
+<div class="item"><b>📈 Economic Explanation</b><p>Up to 10 pts: Explain inflation and purchasing power accurately.</p></div>
+</div>
+<p><b>Maximum: 20 points</b></p><p><b>Bonus rule:</b> Teams must draw and respond to 3 event cards. Teacher can require teams to explain how each card changed their choices before awarding Economic Explanation points.</p>
+<div class="teamrow"><input id="teamName" placeholder="Team name"><input id="teamScore" type="number" min="0" max="20" placeholder="Score (0–20)"><button onclick="addScore()">Add Score</button></div>
+<table style="margin-top:15px"><thead><tr><th>Team</th><th>Score</th></tr></thead><tbody id="scoreRows"></tbody></table>
+</section>
+<section class="panel">
+<h2>🧠 Final Inflation Investigation</h2>
+<p>Answer individually after the game:</p>
+<ol><li>If your budget stayed at $100 but food prices increased, did your purchasing power increase or decrease? Explain.</li><li>Why did some teams have to sacrifice items even though they had the same budget?</li><li>If your family's income increased by 5% but Thanksgiving prices increased by 20%, would your family be better off? Why or why not?</li><li>Is inflation necessarily a problem if everyone's income increases at the same rate as prices? Explain.</li></ol>
+</section>
+<section class="panel small muted"><b>Teacher note:</b> Prices shown are illustrative game prices, not official historical retail data. This game is designed to simulate price increases. Event cards are randomized and only apply once drawn. The transport event adds $1 per item currently in the cart; unexpected guests add a $15 food requirement (or teams may explain a reasonable alternative). </section>
+</div>
+<footer>🍁 Shop smart. Think like an economist. Survive Thanksgiving! 🍁</footer>
+<script>
+const items=[{n:"Turkey",a:20,b:28,emoji:"🦃"},{n:"Stuffing",a:3,b:5,emoji:"🍞"},{n:"Mashed potatoes",a:4,b:6,emoji:"🥔"},{n:"Sweet potatoes",a:4,b:6,emoji:"🍠"},{n:"Cranberry sauce",a:2,b:3,emoji:"🍒"},{n:"Green beans",a:3,b:5,emoji:"🫛"},{n:"Dinner rolls",a:3,b:4,emoji:"🥖"},{n:"Pumpkin pie",a:8,b:12,emoji:"🥧"},{n:"Apple pie",a:7,b:10,emoji:"🍎"},{n:"Drinks",a:5,b:8,emoji:"🥤"}];
+let selected=new Set(),event=null,scoreboard=[];
+function buildShop(){document.getElementById("shopping").innerHTML=items.map((x,i)=>`<div class="item"><label><input type="checkbox" onchange="toggle(${i},this.checked)"><span><b>${x.emoji} ${x.n}</b><br><span class="price">$${x.b}</span> <span class="muted small">(2021: $${x.a})</span></span></label></div>`).join("");updateCart()}
+function toggle(i,on){on?selected.add(i):selected.delete(i);updateCart()}
+function calc(){let list=[...selected].map(i=>items[i]);return {now:list.reduce((s,x)=>s+x.b,0),old:list.reduce((s,x)=>s+x.a,0),count:list.length}}
+function updateCart(){let c=calc();document.getElementById("total").textContent="$"+c.now;document.getElementById("left").textContent="$"+(100-c.now);document.getElementById("old").textContent="$"+c.old;document.getElementById("diff").textContent="$"+(c.now-c.old);let m=document.getElementById("budgetMsg");m.textContent=c.now>100?"🚨 Over budget! Remove items or make substitutions.":`🎉 ${100-c.now>=0?"Within budget!":"Over budget!"} ${c.now<=100?"You have $"+(100-c.now)+" left.":""}`;m.style.color=c.now>100?"#b84c44":"#286653";if(typeof updateEventTotals==="function")updateEventTotals()}
+function resetCart(){selected.clear();document.querySelectorAll('#shopping input').forEach(x=>x.checked=false);updateCart()}
+const events=[
+{t:"Turkey Trouble!",d:"Turkey prices rise by $5.",a:"If you bought turkey, add $5. If you haven't, you may choose to add turkey at its current price plus $5.",type:"turkey"},
+{t:"Dessert Disaster!",d:"Both pies increase by $3 each.",a:"Add $3 for each pie in your cart. You may also choose to add a pie at its listed price plus $3.",type:"pies"},
+{t:"Supply Shortage!",d:"Green beans increase by $4.",a:"If you bought green beans, add $4. If you haven't, you may add them at their current price plus $4.",type:"beans"},
+{t:"Transportation Costs!",d:"Every item in your cart costs an additional $1.",a:"Add $1 for every item currently in your cart.",type:"transport"},
+{t:"Black Friday Bonus!",d:"You receive a $10 discount!",a:"Subtract $10 from your total (the total cannot go below $0).",type:"bonus"},
+{t:"Unexpected Guests!",d:"Two additional guests are coming.",a:"Add $15 to your food costs to feed the extra guests.",type:"guests"}];
+let drawnEvents=[],eventAdjustment=0,guestAdjustment=0,transportAdjustment=0;
+function calcEventAdjustments(){let c=calc(),adjust=0;drawnEvents.forEach(e=>{if(e.type==='turkey'&&selected.has(items.findIndex(x=>x.n==='Turkey')))adjust+=5;if(e.type==='pies')adjust+=[...selected].filter(i=>items[i].n.includes('pie')).length*3;if(e.type==='beans'&&selected.has(items.findIndex(x=>x.n==='Green beans')))adjust+=4;if(e.type==='transport')adjust+=c.count;if(e.type==='bonus')adjust-=10;if(e.type==='guests')adjust+=15});return adjust}
+function updateEventTotals(){let adj=calcEventAdjustments(),c=calc();eventAdjustment=adj;document.getElementById('drawCount').textContent=drawnEvents.length+' / 3';document.getElementById('eventTotal').textContent=(adj>=0?'+$':'−$')+Math.abs(adj);document.getElementById('adjustedTotal').textContent='$'+Math.max(0,c.now+adj);document.getElementById('drawStatus').textContent=drawnEvents.length===3?'🎉 All 3 required event cards drawn! Your team is ready to finalize its dinner.':`Your team must draw ${3-drawnEvents.length} more event card${3-drawnEvents.length===1?'':'s'}.`;let btn=document.getElementById('drawBtn');btn.disabled=drawnEvents.length>=3;btn.textContent=drawnEvents.length>=3?'✅ 3 Event Cards Complete':'🎲 Draw Event Card ('+(drawnEvents.length+1)+' of 3)';}
+function drawEvent(){if(drawnEvents.length>=3){return}let available=events.filter(e=>!drawnEvents.some(x=>x.type===e.type));event=available[Math.floor(Math.random()*available.length)];drawnEvents.push(event);document.getElementById('eventDisplay').classList.remove('hide');document.getElementById('eventTitle').textContent='Card '+drawnEvents.length+': '+event.t;document.getElementById('eventDesc').textContent=event.d;document.getElementById('eventAction').textContent=event.a;let box=document.getElementById('eventApplied');box.classList.remove('hide');document.getElementById('eventInstruction').textContent='Event '+drawnEvents.length+' of 3 — '+event.a;let control=document.getElementById('eventControl'),result=document.getElementById('eventResult');control.innerHTML='';result.textContent='';let c=calc();
+if(event.type==='turkey'&&!selected.has(items.findIndex(x=>x.n==='Turkey'))){control.innerHTML='<p>Turkey is not in your cart yet. Add it (the event surcharge will apply)?</p><button onclick="applyTurkey()">Add turkey</button>'}
+if(event.type==='beans'&&!selected.has(items.findIndex(x=>x.n==='Green beans'))){control.innerHTML='<p>Green beans are not in your cart yet. Add them (the event surcharge will apply)?</p><button onclick="applyBeans()">Add green beans</button>'}
+if(event.type==='guests'){result.textContent='Extra guests add $15 to the game total.'}
+else if(event.type==='bonus'){result.textContent='Discount: −$10. This adjustment is included in the event-adjusted total.'}
+else if(event.type==='transport'){result.textContent='Transportation adjustment is $1 per item in your current cart and recalculates as you shop.'}
+else if(event.type==='pies'){result.textContent='Dessert adjustment is $3 per pie in your cart and recalculates as you shop.'}
+else if(event.type==='turkey'&&selected.has(items.findIndex(x=>x.n==='Turkey'))){result.textContent='Turkey surcharge: +$5. Included in the event-adjusted total.'}
+else if(event.type==='beans'&&selected.has(items.findIndex(x=>x.n==='Green beans'))){result.textContent='Green beans surcharge: +$4. Included in the event-adjusted total.'}
+updateEventTotals();}
+function applyTurkey(){let idx=items.findIndex(x=>x.n==='Turkey');selected.add(idx);document.querySelectorAll('#shopping input')[idx].checked=true;updateCart();document.getElementById('eventResult').textContent='Turkey added to cart. The $5 event surcharge is included.';updateEventTotals()}
+function applyBeans(){let idx=items.findIndex(x=>x.n==='Green beans');selected.add(idx);document.querySelectorAll('#shopping input')[idx].checked=true;updateCart();document.getElementById('eventResult').textContent='Green beans added to cart. The $4 event surcharge is included.';updateEventTotals()}
+function resetEvent(){drawnEvents=[];eventAdjustment=0;document.getElementById('eventDisplay').classList.add('hide');document.getElementById('eventApplied').classList.add('hide');updateEventTotals()}
+function addScore(){let name=document.getElementById("teamName").value.trim(),score=Number(document.getElementById("teamScore").value);if(!name||!Number.isFinite(score)||score<0||score>20){alert("Enter a team name and a score between 0 and 20.");return}scoreboard.push({name,score});scoreboard.sort((a,b)=>b.score-a.score);document.getElementById("scoreRows").innerHTML=scoreboard.map(x=>`<tr><td>${escapeHTML(x.name)}</td><td>${x.score}</td></tr>`).join("");document.getElementById("teamName").value="";document.getElementById("teamScore").value=""}
+function escapeHTML(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+buildShop();updateEventTotals();
+</script>
+</body></html>
